@@ -16,7 +16,7 @@ public class CodeRecordBuilder {
         Path project = Path.of(System.getProperty("user.home"), "IdeaProjects", appName);
         Map<String, CodeFrame> frames = new LinkedHashMap<>();
         for (StackTraceElement call : cause.getCalls()) {
-            String file = "src/main/java/" + call.getClassName().replace('.', '/') + ".java";
+            String file = findFile(project, call.getClassName());
             int line = call.getLineNumber();
             String key = file + ":" + line;
             if (frames.containsKey(key)) {
@@ -27,10 +27,25 @@ public class CodeRecordBuilder {
             frames.put(key, new CodeFrame(file, line, author, code));
         }
         StackTraceElement origin = cause.getOrigin();
-        String originFile = "src/main/java/" + origin.getClassName().replace('.', '/') + ".java";
+        String originFile = findFile(project, origin.getClassName());
         int originLine = origin.getLineNumber();
         String code = line(project, originFile, originLine);
         return new CodeRecord(cause.getType(), code, new ArrayList<>(frames.values()));
+    }
+
+    private String findFile(Path project, String className) throws IOException, InterruptedException {
+        String name = className.contains("$") ? className.substring(0, className.indexOf('$')) : className;
+        String path = name.replace('.', '/') + ".java";
+        ProcessBuilder pb = new ProcessBuilder("bash", "-lc", "find . -path '*/src/main/java/" + path + "' -print -quit");
+        pb.directory(project.toFile());
+        Process p = pb.start();
+        byte[] out = p.getInputStream().readAllBytes();
+        p.waitFor();
+        String result = new String(out, StandardCharsets.UTF_8).trim();
+        if (result.startsWith("./")) {
+            result = result.substring(2);
+        }
+        return result.isEmpty() ? "src/main/java/" + path : result;
     }
 
     private String author(Path project, String file, int line) throws IOException, InterruptedException {
