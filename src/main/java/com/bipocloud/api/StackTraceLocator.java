@@ -11,15 +11,44 @@ public class StackTraceLocator {
             return null;
         }
         String[] lines = stack.split("\r?\n");
-        int root = -1;
+        List<Integer> causes = new ArrayList<>();
+        causes.add(0);
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
             if (line.startsWith("Caused by")) {
-                root = i;
+                causes.add(i);
             }
         }
-        if (root < 0) {
-            root = 0;
+        int root = causes.get(causes.size() - 1);
+        for (int j = causes.size() - 1; j >= 0; j--) {
+            int start = causes.get(j);
+            int end = j + 1 < causes.size() ? causes.get(j + 1) : lines.length;
+            boolean hasBipo = false;
+            for (int k = start + 1; k < end; k++) {
+                String line = lines[k].trim();
+                if (!line.startsWith("at ")) {
+                    continue;
+                }
+                String content = line.substring(3);
+                int paren = content.indexOf('(');
+                if (paren < 0) {
+                    continue;
+                }
+                String methodPart = content.substring(0, paren);
+                int lastDot = methodPart.lastIndexOf('.');
+                if (lastDot < 0) {
+                    continue;
+                }
+                String className = methodPart.substring(0, lastDot);
+                if (className.startsWith("com.bipo")) {
+                    hasBipo = true;
+                    break;
+                }
+            }
+            if (hasBipo) {
+                root = start;
+                break;
+            }
         }
         String header = lines[root].trim();
         if (header.startsWith("Caused by:")) {
@@ -32,8 +61,10 @@ public class StackTraceLocator {
         } else {
             type = header;
         }
+        int pos = causes.indexOf(root);
+        int end = pos + 1 < causes.size() ? causes.get(pos + 1) : lines.length;
         List<StackTraceElement> calls = new ArrayList<>();
-        for (int i = root + 1; i < lines.length; i++) {
+        for (int i = root + 1; i < end; i++) {
             String line = lines[i].trim();
             if (!line.startsWith("at ")) {
                 continue;
