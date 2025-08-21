@@ -76,4 +76,26 @@ class StackTraceLocatorTest {
         assertEquals(20, origin.getLineNumber());
         assertEquals(1, cause.getCalls().size());
     }
+
+    @Test
+    void aggregatesCallsFromAllCauses() {
+        String stack = "java.lang.RuntimeException: outer\n" +
+                "\tat org.other.Lib.start(Lib.java:1)\n" +
+                "Caused by: java.lang.IllegalStateException: middle\n" +
+                "\tat com.bipo.Mid.run(Mid.java:20)\n" +
+                "\tat org.other.Lib.go(Lib.java:30)\n" +
+                "Caused by: java.lang.IllegalArgumentException: inner\n" +
+                "\tat com.bipo.Inner.deep(Inner.java:40)\n" +
+                "\tat com.bipo.App.main(App.java:60)\n";
+        StackTraceRootCause cause = new StackTraceLocator().findRootCause(stack);
+        assertNotNull(cause);
+        assertEquals("java.lang.IllegalArgumentException", cause.getType());
+        StackTraceElement origin = cause.getOrigin();
+        assertNotNull(origin);
+        assertEquals("com.bipo.Inner", origin.getClassName());
+        assertEquals("deep", origin.getMethodName());
+        assertEquals(40, origin.getLineNumber());
+        assertEquals(3, cause.getCalls().size());
+        assertEquals("com.bipo.Mid", cause.getCalls().get(2).getClassName());
+    }
 }

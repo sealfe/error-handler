@@ -62,44 +62,47 @@ public class StackTraceLocator {
             type = header;
         }
         int pos = causes.indexOf(root);
-        int end = pos + 1 < causes.size() ? causes.get(pos + 1) : lines.length;
         List<StackTraceElement> calls = new ArrayList<>();
-        for (int i = root + 1; i < end; i++) {
-            String line = lines[i].trim();
-            if (!line.startsWith("at ")) {
-                continue;
-            }
-            String content = line.substring(3);
-            int paren = content.indexOf('(');
-            if (paren < 0) {
-                continue;
-            }
-            String methodPart = content.substring(0, paren);
-            int lastDot = methodPart.lastIndexOf('.');
-            if (lastDot < 0) {
-                continue;
-            }
-            String className = methodPart.substring(0, lastDot);
-            if (!className.startsWith("com.bipo")) {
-                continue;
-            }
-            String methodName = methodPart.substring(lastDot + 1);
-            String filePart = content.substring(paren + 1, content.length() - 1);
-            int colon2 = filePart.lastIndexOf(':');
-            String fileName;
-            int number;
-            if (colon2 >= 0) {
-                fileName = filePart.substring(0, colon2);
-                try {
-                    number = Integer.parseInt(filePart.substring(colon2 + 1));
-                } catch (NumberFormatException e) {
+        for (int j = pos; j >= 0; j--) {
+            int start = causes.get(j);
+            int end = j + 1 < causes.size() ? causes.get(j + 1) : lines.length;
+            for (int i = start + 1; i < end; i++) {
+                String line = lines[i].trim();
+                if (!line.startsWith("at ")) {
+                    continue;
+                }
+                String content = line.substring(3);
+                int paren = content.indexOf('(');
+                if (paren < 0) {
+                    continue;
+                }
+                String methodPart = content.substring(0, paren);
+                int lastDot = methodPart.lastIndexOf('.');
+                if (lastDot < 0) {
+                    continue;
+                }
+                String className = methodPart.substring(0, lastDot);
+                if (!className.startsWith("com.bipo")) {
+                    continue;
+                }
+                String methodName = methodPart.substring(lastDot + 1);
+                String filePart = content.substring(paren + 1, content.length() - 1);
+                int colon2 = filePart.lastIndexOf(':');
+                String fileName;
+                int number;
+                if (colon2 >= 0) {
+                    fileName = filePart.substring(0, colon2);
+                    try {
+                        number = Integer.parseInt(filePart.substring(colon2 + 1));
+                    } catch (NumberFormatException e) {
+                        number = -1;
+                    }
+                } else {
+                    fileName = filePart;
                     number = -1;
                 }
-            } else {
-                fileName = filePart;
-                number = -1;
+                calls.add(new StackTraceElement(className, methodName, fileName, number));
             }
-            calls.add(new StackTraceElement(className, methodName, fileName, number));
         }
         StackTraceElement origin = calls.isEmpty() ? null : calls.get(0);
         return new StackTraceRootCause(type, origin, calls);
