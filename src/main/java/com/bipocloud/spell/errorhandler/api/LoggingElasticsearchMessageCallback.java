@@ -1,4 +1,4 @@
-package com.bipocloud.api;
+package com.bipocloud.spell.errorhandler.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

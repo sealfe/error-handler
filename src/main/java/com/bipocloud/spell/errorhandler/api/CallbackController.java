@@ -1,4 +1,4 @@
-package com.bipocloud.api;
+package com.bipocloud.spell.errorhandler.api;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

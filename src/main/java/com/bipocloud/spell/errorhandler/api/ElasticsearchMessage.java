@@ -1,4 +1,4 @@
-package com.bipocloud.api;
+package com.bipocloud.spell.errorhandler.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

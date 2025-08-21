@@ -1,4 +1,4 @@
-package com.bipocloud.api;
+package com.bipocloud.spell.errorhandler.api;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

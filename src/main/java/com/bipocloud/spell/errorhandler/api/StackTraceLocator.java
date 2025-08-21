@@ -1,4 +1,4 @@
-package com.bipocloud.api;
+package com.bipocloud.spell.errorhandler.api;
 
 import java.util.ArrayList;
 import java.util.List;
