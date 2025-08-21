@@ -5,5 +5,7 @@
 ```python
 import error_handler.core
 
-result, error = error_handler.core.capture(func)
+result, detail = error_handler.core.capture(func)
+if detail:
+    print(detail)
 ```
