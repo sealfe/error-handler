@@ -19,7 +19,7 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
 
     public void handle(ElasticsearchMessage message) {
         try {
-            StackTraceRootCause cause = stackTraceLocator.findRootCause(message.getLog().getStack());
+            StackTraceRootCause cause = stackTraceLocator.findRootCause(message.getSource().getStackTrace());
             if (cause != null) {
                 logger.info(objectMapper.writeValueAsString(cause));
             } else {
