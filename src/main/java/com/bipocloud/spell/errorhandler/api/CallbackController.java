@@ -5,8 +5,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @Slf4j
 public class CallbackController {
@@ -18,6 +16,7 @@ public class CallbackController {
 
     @PostMapping("/webhook")
     public void receive(@RequestBody ElasticsearchMessage message) {
+        log.info(message.getContent());
         callback.handle(message);
     }
 }
