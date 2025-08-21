@@ -1,5 +1,5 @@
 # Overview
-This service is built with Java 11 and Spring Boot, using Gradle as its build tool. It connects to Elasticsearch to monitor error logs, uses Git for source code context, leverages an LLM for reasoning, and creates JIRA issues.
+This service is built with Java 21 and Spring Boot, using Gradle as its build tool. It connects to Elasticsearch to monitor error logs, uses Git for source code context, leverages an LLM for reasoning, and creates JIRA issues.
 
 # Problem
 The service automates error handling:
