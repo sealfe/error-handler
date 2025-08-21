@@ -1,0 +1,109 @@
+{
+  "_index": "eu-archegos-uat-logs-2025.08.21",
+  "_type": "_doc",
+  "_id": "FLhyy5gBJKDW6TLVI1Xw",
+  "_version": 1,
+  "_score": 1,
+  "_ignored": [
+    "stack_trace.keyword"
+  ],
+  "_source": {
+    "message": "wrapped exception",
+    "@version": 1,
+    "thread_name": "Thread-28000",
+    "level": "ERROR",
+    "instance_name": "dukang-service-online-job-ip-10-0-152-0.eu-central-1.compute.internal:8080",
+    "host": "ip-10-0-152-0.eu-central-1.compute.internal",
+    "stack_trace": "aaa",
+    "APP_NAME": "dukang-service-online-job",
+    "app_name": "dukang-service-online-job",
+    "type": "syslog",
+    "logger_name": "com.bipocloud.dukang.serviceonline.hrms.acl.HRMSWrapper",
+    "port": 56856,
+    "@timestamp": "2025-08-21T07:05:11.818Z",
+    "level_value": 40000,
+    "app_port": "8080"
+  },
+  "fields": {
+    "app_port": [
+      "8080"
+    ],
+    "APP_NAME": [
+      "dukang-service-online-job"
+    ],
+    "type": [
+      "syslog"
+    ],
+    "type.keyword": [
+      "syslog"
+    ],
+    "host": [
+      "ip-10-0-152-0.eu-central-1.compute.internal"
+    ],
+    "@version": [
+      1
+    ],
+    "logger_name": [
+      "com.bipocloud.dukang.serviceonline.hrms.acl.HRMSWrapper"
+    ],
+    "host.keyword": [
+      "ip-10-0-152-0.eu-central-1.compute.internal"
+    ],
+    "logger_name.keyword": [
+      "com.bipocloud.dukang.serviceonline.hrms.acl.HRMSWrapper"
+    ],
+    "thread_name.keyword": [
+      "Thread-28000"
+    ],
+    "instance_name": [
+      "dukang-service-online-job-ip-10-0-152-0.eu-central-1.compute.internal:8080"
+    ],
+    "level": [
+      "ERROR"
+    ],
+    "APP_NAME.keyword": [
+      "dukang-service-online-job"
+    ],
+    "message": [
+      "wrapped exception"
+    ],
+    "instance_name.keyword": [
+      "dukang-service-online-job-ip-10-0-152-0.eu-central-1.compute.internal:8080"
+    ],
+    "app_name": [
+      "dukang-service-online-job"
+    ],
+    "@timestamp": [
+      "2025-08-21T07:05:11.818Z"
+    ],
+    "app_port.keyword": [
+      "8080"
+    ],
+    "level.keyword": [
+      "ERROR"
+    ],
+    "port": [
+      56856
+    ],
+    "thread_name": [
+      "Thread-28000"
+    ],
+    "level_value": [
+      40000
+    ],
+    "message.keyword": [
+      "wrapped exception"
+    ],
+    "stack_trace": [
+      ""
+    ],
+    "app_name.keyword": [
+      "dukang-service-online-job"
+    ]
+  },
+  "ignored_field_values": {
+    "stack_trace.keyword": [
+      "dd"
+    ]
+  }
+}
