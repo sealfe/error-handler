@@ -1,5 +1,7 @@
 package com.bipocloud.api;
 
+import com.bipocloud.spell.errorhandler.api.StackTraceLocator;
+import com.bipocloud.spell.errorhandler.api.StackTraceRootCause;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
