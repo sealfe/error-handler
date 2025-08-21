@@ -10,14 +10,21 @@ import org.springframework.stereotype.Component;
 public class LoggingElasticsearchMessageCallback implements ElasticsearchMessageCallback {
     private static final Logger logger = LoggerFactory.getLogger(LoggingElasticsearchMessageCallback.class);
     private final ObjectMapper objectMapper;
+    private final StackTraceLocator stackTraceLocator;
 
-    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper) {
+    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper, StackTraceLocator stackTraceLocator) {
         this.objectMapper = objectMapper;
+        this.stackTraceLocator = stackTraceLocator;
     }
 
     public void handle(ElasticsearchMessage message) {
         try {
-            logger.info(objectMapper.writeValueAsString(message));
+            StackTraceElement element = stackTraceLocator.locateBusinessFrame(message.getLog().getStack());
+            if (element != null) {
+                logger.info(objectMapper.writeValueAsString(element));
+            } else {
+                logger.info(objectMapper.writeValueAsString(message));
+            }
         } catch (JsonProcessingException e) {
             logger.warn(e.getMessage());
         }
