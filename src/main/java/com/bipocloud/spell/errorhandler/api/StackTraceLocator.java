@@ -2,109 +2,80 @@ package com.bipocloud.spell.errorhandler.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-@Component
 public class StackTraceLocator {
     public StackTraceRootCause findRootCause(String stack) {
-        if (stack == null) {
-            return null;
-        }
-        String[] lines = stack.split("\r?\n");
-        List<Integer> causes = new ArrayList<>();
-        causes.add(0);
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i].trim();
-            if (line.startsWith("Caused by")) {
-                causes.add(i);
-            }
-        }
-        int root = causes.get(causes.size() - 1);
-        for (int j = causes.size() - 1; j >= 0; j--) {
-            int start = causes.get(j);
-            int end = j + 1 < causes.size() ? causes.get(j + 1) : lines.length;
-            boolean hasBipo = false;
-            for (int k = start + 1; k < end; k++) {
-                String line = lines[k].trim();
-                if (!line.startsWith("at ")) {
-                    continue;
-                }
-                String content = line.substring(3);
-                int paren = content.indexOf('(');
-                if (paren < 0) {
-                    continue;
-                }
-                String methodPart = content.substring(0, paren);
-                int lastDot = methodPart.lastIndexOf('.');
-                if (lastDot < 0) {
-                    continue;
-                }
-                String className = methodPart.substring(0, lastDot);
-                if (className.startsWith("com.bipo")) {
-                    hasBipo = true;
-                    break;
-                }
-            }
-            if (hasBipo) {
-                root = start;
+        List<Cause> causes = parse(stack);
+        int root = causes.size() - 1;
+        for (int i = root; i >= 0; i--) {
+            if (containsBipo(causes.get(i).frames)) {
+                root = i;
                 break;
             }
         }
-        String header = lines[root].trim();
-        if (header.startsWith("Caused by:")) {
-            header = header.substring("Caused by:".length()).trim();
-        }
-        int colon = header.indexOf(':');
-        String type;
-        if (colon >= 0) {
-            type = header.substring(0, colon).trim();
-        } else {
-            type = header;
-        }
-        int pos = causes.indexOf(root);
         List<StackTraceElement> calls = new ArrayList<>();
-        for (int j = pos; j >= 0; j--) {
-            int start = causes.get(j);
-            int end = j + 1 < causes.size() ? causes.get(j + 1) : lines.length;
-            for (int i = start + 1; i < end; i++) {
-                String line = lines[i].trim();
-                if (!line.startsWith("at ")) {
-                    continue;
+        for (int i = root; i < causes.size(); i++) {
+            for (StackTraceElement el : causes.get(i).frames) {
+                if (el.getClassName().startsWith("com.bipo.")) {
+                    calls.add(el);
                 }
-                String content = line.substring(3);
-                int paren = content.indexOf('(');
-                if (paren < 0) {
-                    continue;
-                }
-                String methodPart = content.substring(0, paren);
-                int lastDot = methodPart.lastIndexOf('.');
-                if (lastDot < 0) {
-                    continue;
-                }
-                String className = methodPart.substring(0, lastDot);
-                if (!className.startsWith("com.bipo")) {
-                    continue;
-                }
-                String methodName = methodPart.substring(lastDot + 1);
-                String filePart = content.substring(paren + 1, content.length() - 1);
-                int colon2 = filePart.lastIndexOf(':');
-                String fileName;
-                int number;
-                if (colon2 >= 0) {
-                    fileName = filePart.substring(0, colon2);
-                    try {
-                        number = Integer.parseInt(filePart.substring(colon2 + 1));
-                    } catch (NumberFormatException e) {
-                        number = -1;
-                    }
-                } else {
-                    fileName = filePart;
-                    number = -1;
-                }
-                calls.add(new StackTraceElement(className, methodName, fileName, number));
             }
         }
         StackTraceElement origin = calls.isEmpty() ? null : calls.get(0);
-        return new StackTraceRootCause(type, origin, calls);
+        return new StackTraceRootCause(causes.get(root).type, origin, calls);
+    }
+
+    private boolean containsBipo(List<StackTraceElement> frames) {
+        for (StackTraceElement el : frames) {
+            if (el.getClassName().startsWith("com.bipo.")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<Cause> parse(String stack) {
+        String[] lines = stack.split("\n");
+        List<Cause> causes = new ArrayList<>();
+        Cause current = null;
+        for (String line : lines) {
+            if (line.startsWith("Caused by: ")) {
+                String type = line.substring(11).split(":")[0];
+                current = new Cause(type);
+                causes.add(current);
+            } else if (!line.startsWith("\tat ")) {
+                if (current == null) {
+                    String type = line.split(":")[0];
+                    current = new Cause(type);
+                    causes.add(current);
+                }
+            } else {
+                if (current != null) {
+                    current.frames.add(parseFrame(line.substring(4)));
+                }
+            }
+        }
+        return causes;
+    }
+
+    private StackTraceElement parseFrame(String text) {
+        int paren = text.indexOf('(');
+        String classMethod = text.substring(0, paren);
+        int lastDot = classMethod.lastIndexOf('.');
+        String className = classMethod.substring(0, lastDot);
+        String method = classMethod.substring(lastDot + 1);
+        String fileLine = text.substring(paren + 1, text.length() - 1);
+        int colon = fileLine.indexOf(':');
+        String file = colon >= 0 ? fileLine.substring(0, colon) : fileLine;
+        int line = colon >= 0 ? Integer.parseInt(fileLine.substring(colon + 1)) : -1;
+        return new StackTraceElement(className, method, file, line);
+    }
+
+    private static class Cause {
+        private String type;
+        private List<StackTraceElement> frames = new ArrayList<>();
+        private Cause(String type) {
+            this.type = type;
+        }
     }
 }

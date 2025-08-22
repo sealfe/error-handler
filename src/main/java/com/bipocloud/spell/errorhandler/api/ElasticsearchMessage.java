@@ -1,43 +1,26 @@
 package com.bipocloud.spell.errorhandler.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
+@Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ElasticsearchMessage {
+    private String title;
     private String content;
 
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
     public String extractStackTrace() {
-        if (content == null) {
-            return null;
+        int idx = content.indexOf("stack_trace:");
+        if (idx < 0) {
+            return "";
         }
-        String marker = "stack_trace:\n";
-        int index = content.indexOf(marker);
-        if (index == -1) {
-            return null;
-        }
-        return content.substring(index + marker.length()).trim();
+        int start = idx + "stack_trace:".length();
+        return content.substring(start).trim();
     }
 
     public String extractAppName() {
-        if (content == null) {
-            return null;
-        }
-        int end = content.indexOf("最近");
-        if (end == -1) {
-            return null;
-        }
-        int start = content.lastIndexOf(']', end);
-        if (start == -1 || start + 1 >= end) {
-            return null;
-        }
-        return content.substring(start + 1, end);
+        int idx = title.lastIndexOf(']');
+        String name = idx >= 0 ? title.substring(idx + 1) : title;
+        return name.endsWith("-copy") ? name.substring(0, name.length() - 5) : name;
     }
 }
