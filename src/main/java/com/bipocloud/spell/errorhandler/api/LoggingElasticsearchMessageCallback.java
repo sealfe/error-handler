@@ -11,11 +11,13 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
     private final ObjectMapper objectMapper;
     private final StackTraceLocator stackTraceLocator;
     private final CodeRecordBuilder builder;
+    private final CodeAnalyzer analyzer;
 
-    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper, CodeRecordBuilder builder) {
+    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper, CodeRecordBuilder builder, CodeAnalyzer analyzer) {
         this.objectMapper = objectMapper;
         this.stackTraceLocator = new StackTraceLocator();
         this.builder = builder;
+        this.analyzer = analyzer;
     }
 
     public void handle(ElasticsearchMessage message) {
@@ -24,8 +26,9 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
             if (stack != null) {
                 StackTraceRootCause cause = stackTraceLocator.findRootCause(stack);
                 if (cause != null) {
-                    CodeRecord record = builder.build(cause, message.extractAppName());
-                    logger.info(objectMapper.writeValueAsString(record));
+                    CodeRecord record = builder.build(cause, message.extractAppName(), stack);
+                    String result = analyzer.analyze(record);
+                    logger.info(result);
                     return;
                 }
             }

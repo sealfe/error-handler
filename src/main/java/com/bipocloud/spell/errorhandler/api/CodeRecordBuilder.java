@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CodeRecordBuilder {
-    public CodeRecord build(StackTraceRootCause cause, String appName) throws IOException, InterruptedException {
+    public CodeRecord build(StackTraceRootCause cause, String appName, String stack) throws IOException, InterruptedException {
         Path project = Path.of(System.getProperty("user.home"), "IdeaProjects", appName);
         String tag = lastTag(project);
         Map<String, CodeFrame> frames = new LinkedHashMap<>();
@@ -30,7 +31,8 @@ public class CodeRecordBuilder {
         String originFile = findFile(project, origin.getClassName());
         int originLine = origin.getLineNumber();
         String code = line(project, tag, originFile, originLine);
-        return new CodeRecord(cause.getType(), code, new ArrayList<>(frames.values()));
+        List<String> trace = Arrays.asList(stack.split("\\R"));
+        return new CodeRecord(cause.getType(), code, new ArrayList<>(frames.values()), trace);
     }
 
     private String findFile(Path project, String className) throws IOException, InterruptedException {
