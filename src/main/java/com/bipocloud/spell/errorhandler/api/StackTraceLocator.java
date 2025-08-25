@@ -16,7 +16,7 @@ public class StackTraceLocator {
         List<StackTraceElement> calls = new ArrayList<>();
         for (int i = root; i < causes.size(); i++) {
             for (StackTraceElement el : causes.get(i).frames) {
-                if (el.getClassName().startsWith("com.bipo.")) {
+                if (el.getClassName().startsWith("com.bipo")) {
                     calls.add(el);
                 }
             }
@@ -27,7 +27,7 @@ public class StackTraceLocator {
 
     private boolean containsBipo(List<StackTraceElement> frames) {
         for (StackTraceElement el : frames) {
-            if (el.getClassName().startsWith("com.bipo.")) {
+            if (el.getClassName().startsWith("com.bipo")) {
                 return true;
             }
         }

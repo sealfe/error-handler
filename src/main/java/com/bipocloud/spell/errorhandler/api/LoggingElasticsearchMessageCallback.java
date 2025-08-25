@@ -12,9 +12,9 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
     private final StackTraceLocator stackTraceLocator;
     private final CodeRecordBuilder builder;
 
-    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper, StackTraceLocator stackTraceLocator, CodeRecordBuilder builder) {
+    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper, CodeRecordBuilder builder) {
         this.objectMapper = objectMapper;
-        this.stackTraceLocator = stackTraceLocator;
+        this.stackTraceLocator = new StackTraceLocator();
         this.builder = builder;
     }
 
