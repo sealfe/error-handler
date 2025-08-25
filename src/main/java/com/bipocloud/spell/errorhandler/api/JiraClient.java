@@ -9,6 +9,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +40,7 @@ public class JiraClient {
         String id = accountId(assignee);
         String bug = bugId();
         Map<String, Object> fields = new HashMap<>();
-        fields.put("project", Map.of("key", project));
+        fields.put("project", Map.of("id", project));
         fields.put("summary", summary);
         fields.put("description", description);
         if (!bug.isEmpty()) {
@@ -49,7 +51,11 @@ public class JiraClient {
         if (!id.isEmpty()) {
             fields.put("assignee", Map.of("id", id));
         }
-        Map<String, Object> body = Map.of("fields", fields);
+        String started = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
+        Map<String, Object> update = Map.of("worklog", List.of(Map.of("add", Map.of("started", started, "timeSpent", "60m"))));
+        Map<String, Object> body = new HashMap<>();
+        body.put("fields", fields);
+        body.put("update", update);
         String auth = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url + "/rest/api/2/issue")).header("Authorization", "Basic " + auth).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
