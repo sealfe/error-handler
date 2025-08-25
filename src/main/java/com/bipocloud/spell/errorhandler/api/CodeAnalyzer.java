@@ -1,6 +1,8 @@
 package com.bipocloud.spell.errorhandler.api;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -10,6 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -43,7 +47,9 @@ public class CodeAnalyzer {
         body.put("model", "gpt-4o-mini");
         Map<String, String> message = new HashMap<>();
         message.put("role", "user");
-        message.put("content", prompt + mapper.writeValueAsString(record));
+        String codes = record.getStack().stream().map(n -> n.getCode()).flatMap(n -> n.stream()).collect(Collectors.joining());
+        String value = prompt.replace("{{exception_message}}", record.getType()).replace("{{code_snippets}}", codes).replace("{{stack_trace}}", record.getTrace().stream().collect(Collectors.joining()));
+        message.put("content", value);
         body.put("messages", List.of(message));
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).header("Authorization", "Bearer " + key).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
