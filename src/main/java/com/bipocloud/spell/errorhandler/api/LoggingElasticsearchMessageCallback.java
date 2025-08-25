@@ -30,7 +30,8 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
                 if (cause != null) {
                     CodeRecord record = builder.build(cause, message.extractAppName(), stack);
                     String result = analyzer.analyze(record);
-                    jira.create(record.merge(result));
+                    String email = record.getStack().isEmpty() ? "" : record.getStack().get(0).getAuthor();
+                    jira.create(record.getType(), result, email);
                     return;
                 }
             }

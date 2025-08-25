@@ -1,13 +1,17 @@
 package com.bipocloud.spell.errorhandler.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,18 +23,42 @@ public class JiraClient {
     private final String url;
     private final String user;
     private final String token;
+    private final String project;
 
-    public JiraClient(ObjectMapper mapper, @Value("${jira.url}") String url, @Value("${jira.user}") String user, @Value("${jira.token}") String token) {
+    public JiraClient(ObjectMapper mapper, @Value("${jira.url}") String url, @Value("${jira.user}") String user, @Value("${jira.token}") String token, @Value("${jira.project}") String project) {
         this.mapper = mapper;
         this.client = HttpClient.newHttpClient();
         this.url = url;
         this.user = user;
         this.token = token;
+        this.project = project;
     }
 
-    public void create(Map<String, Object> body) throws IOException, InterruptedException {
+    public void create(String summary, String description, String assignee) throws IOException, InterruptedException {
+        String id = accountId(assignee);
+        Map<String, Object> fields = new HashMap<>();
+        fields.put("project", Map.of("key", project));
+        fields.put("summary", summary);
+        fields.put("description", description);
+        fields.put("issuetype", Map.of("name", "Bug"));
+        if (!id.isEmpty()) {
+            fields.put("assignee", Map.of("id", id));
+        }
+        Map<String, Object> body = Map.of("fields", fields);
         String auth = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url + "/rest/api/2/issue")).header("Authorization", "Basic " + auth).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String accountId(String email) throws IOException, InterruptedException {
+        String auth = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
+        String query = URLEncoder.encode(email, StandardCharsets.UTF_8);
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url + "/rest/api/3/user/search?query=" + query)).header("Authorization", "Basic " + auth).build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        List<Map<String, Object>> users = mapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
+        if (!users.isEmpty() && users.get(0).get("accountId") != null) {
+            return users.get(0).get("accountId").toString();
+        }
+        return "";
     }
 }
