@@ -38,9 +38,10 @@ public class JiraClient {
 
     public void create(String summary, String description, String assignee) throws IOException, InterruptedException {
         String id = accountId(assignee);
+        String projectId = projectId(project);
         String bug = "10004";
         Map<String, Object> fields = new HashMap<>();
-        fields.put("project", Map.of("id", project));
+        fields.put("project", Map.of("id", projectId));
         fields.put("summary", summary);
         fields.put("description", description);
         if (!bug.isEmpty()) {
@@ -70,6 +71,19 @@ public class JiraClient {
         List<Map<String, Object>> users = mapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
         if (!users.isEmpty() && users.get(0).get("accountId") != null) {
             return users.get(0).get("accountId").toString();
+        }
+        return "";
+    }
+
+    private String projectId(String name) throws IOException, InterruptedException {
+        String auth = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
+        String query = URLEncoder.encode(name, StandardCharsets.UTF_8);
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url + "/rest/api/3/project/search?query=" + query)).header("Authorization", "Basic " + auth).build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Map<String, Object> result = mapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+        List<Map<String, Object>> values = (List<Map<String, Object>>) result.get("values");
+        if (values != null && !values.isEmpty() && values.get(0).get("id") != null) {
+            return values.get(0).get("id").toString();
         }
         return "";
     }
