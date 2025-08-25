@@ -28,7 +28,6 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
                 if (cause != null) {
                     CodeRecord record = builder.build(cause, message.extractAppName(), stack);
                     String result = analyzer.analyze(record);
-                    logger.info(result);
                     return;
                 }
             }
