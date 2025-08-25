@@ -58,8 +58,9 @@ public class CodeRecordBuilder {
         p.waitFor();
         String[] lines = new String(out, StandardCharsets.UTF_8).split("\\R");
         for (String l : lines) {
-            if (l.startsWith("author ")) {
-                return l.substring(7).trim();
+            if (l.startsWith("author-mail ")) {
+                String mail = l.substring(12).trim();
+                return mail.startsWith("<") && mail.endsWith(">") ? mail.substring(1, mail.length() - 1) : mail;
             }
         }
         return "";
