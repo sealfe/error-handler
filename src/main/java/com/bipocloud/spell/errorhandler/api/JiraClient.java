@@ -38,7 +38,7 @@ public class JiraClient {
 
     public void create(String summary, String description, String assignee) throws IOException, InterruptedException {
         String id = accountId(assignee);
-        String bug = bugId();
+        String bug = "10004";
         Map<String, Object> fields = new HashMap<>();
         fields.put("project", Map.of("id", project));
         fields.put("summary", summary);
@@ -58,7 +58,8 @@ public class JiraClient {
         body.put("update", update);
         String auth = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url + "/rest/api/2/issue")).header("Authorization", "Basic " + auth).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
-        client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println(send);
     }
 
     private String accountId(String email) throws IOException, InterruptedException {
@@ -73,16 +74,4 @@ public class JiraClient {
         return "";
     }
 
-    private String bugId() throws IOException, InterruptedException {
-        String auth = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
-        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url + "/rest/api/3/issuetype")).header("Authorization", "Basic " + auth).build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        List<Map<String, Object>> types = mapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
-        for (Map<String, Object> type : types) {
-            if ("Bug".equals(type.get("name")) && type.get("id") != null) {
-                return type.get("id").toString();
-            }
-        }
-        return "";
-    }
 }
