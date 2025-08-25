@@ -1,6 +1,8 @@
 package com.bipocloud.spell.errorhandler.api;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CodeRecord {
     private final String type;
@@ -29,5 +31,15 @@ public class CodeRecord {
 
     public List<String> getTrace() {
         return trace;
+    }
+
+    public Map<String, Object> merge(String result) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", type);
+        map.put("code", code);
+        map.put("stack", stack);
+        map.put("trace", trace);
+        map.put("result", result);
+        return map;
     }
 }

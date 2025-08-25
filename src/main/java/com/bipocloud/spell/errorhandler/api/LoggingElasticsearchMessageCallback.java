@@ -12,12 +12,14 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
     private final StackTraceLocator stackTraceLocator;
     private final CodeRecordBuilder builder;
     private final CodeAnalyzer analyzer;
+    private final JiraClient jira;
 
-    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper, CodeRecordBuilder builder, CodeAnalyzer analyzer) {
+    public LoggingElasticsearchMessageCallback(ObjectMapper objectMapper, CodeRecordBuilder builder, CodeAnalyzer analyzer, JiraClient jira) {
         this.objectMapper = objectMapper;
         this.stackTraceLocator = new StackTraceLocator();
         this.builder = builder;
         this.analyzer = analyzer;
+        this.jira = jira;
     }
 
     public void handle(ElasticsearchMessage message) {
@@ -28,6 +30,7 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
                 if (cause != null) {
                     CodeRecord record = builder.build(cause, message.extractAppName(), stack);
                     String result = analyzer.analyze(record);
+                    jira.create(record.merge(result));
                     return;
                 }
             }
