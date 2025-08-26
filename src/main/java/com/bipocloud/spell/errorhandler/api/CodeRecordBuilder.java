@@ -23,9 +23,11 @@ public class CodeRecordBuilder {
             if (frames.containsKey(key)) {
                 continue;
             }
-            String author = author(project, tag, file, line);
+            String[] info = authorInfo(project, tag, file, line);
+            String author = info[0];
+            String mail = info[1];
             List<String> code = snippet(project, tag, file, line, 20);
-            frames.put(key, new CodeFrame(file, line, author, code));
+            frames.put(key, new CodeFrame(file, line, author, mail, code));
         }
         StackTraceElement origin = cause.getOrigin();
         String originFile = findFile(project, origin.getClassName());
@@ -50,20 +52,27 @@ public class CodeRecordBuilder {
         return result.isEmpty() ? "src/main/java/" + path : result;
     }
 
-    private String author(Path project, String tag, String file, int line) throws IOException, InterruptedException {
+    private String[] authorInfo(Path project, String tag, String file, int line) throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder("git", "blame", tag, "-p", "-L", line + "," + line, "--", file);
         pb.directory(project.toFile());
         Process p = pb.start();
         byte[] out = p.getInputStream().readAllBytes();
         p.waitFor();
         String[] lines = new String(out, StandardCharsets.UTF_8).split("\\R");
+        String author = "";
+        String mail = "";
         for (String l : lines) {
+            if (l.startsWith("author ")) {
+                author = l.substring(7).trim();
+            }
             if (l.startsWith("author-mail ")) {
-                String mail = l.substring(12).trim();
-                return mail.startsWith("<") && mail.endsWith(">") ? mail.substring(1, mail.length() - 1) : mail;
+                mail = l.substring(12).trim();
+                if (mail.startsWith("<") && mail.endsWith(">")) {
+                    mail = mail.substring(1, mail.length() - 1);
+                }
             }
         }
-        return "";
+        return new String[] {author, mail};
     }
 
     private List<String> snippet(Path project, String tag, String file, int line, int radius) throws IOException, InterruptedException {
