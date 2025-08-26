@@ -31,7 +31,7 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
                     CodeRecord record = builder.build(cause, message.extractAppName(), stack);
                     String result = analyzer.analyze(record);
                     String email = record.getStack().isEmpty() ? "" : record.getStack().get(0).getAuthor();
-                    jira.create(record.getType(), result, email);
+                    jira.create(record.getType(), record.description(result), email);
                     return;
                 }
             }

@@ -42,4 +42,9 @@ public class CodeRecord {
         map.put("result", result);
         return map;
     }
+
+    public String description(String result) {
+        String collect = String.join("\n", trace);
+        return collect + "\n" + result;
+    }
 }
