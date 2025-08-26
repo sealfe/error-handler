@@ -6,12 +6,14 @@ public class CodeFrame {
     private final String file;
     private final int line;
     private final String author;
+    private final String mail;
     private final List<String> code;
 
-    public CodeFrame(String file, int line, String author, List<String> code) {
+    public CodeFrame(String file, int line, String author, String mail, List<String> code) {
         this.file = file;
         this.line = line;
         this.author = author;
+        this.mail = mail;
         this.code = code;
     }
 
@@ -25,6 +27,10 @@ public class CodeFrame {
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getMail() {
+        return mail;
     }
 
     public List<String> getCode() {
