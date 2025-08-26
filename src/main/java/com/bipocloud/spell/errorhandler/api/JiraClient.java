@@ -82,7 +82,12 @@ public class JiraClient {
     }
 
     private void notifyWeChat(String email, String author, String key, String summary) throws IOException, InterruptedException {
-        Map<String, Object> markdown = Map.of("content", "author-mail: " + email + "\nauthor: " + author + "\nstory: " + key + "\ntitle: " + summary);
+        String id = WeChatUsers.userId(email);
+        Map<String, Object> markdown = new HashMap<>();
+        markdown.put("content", "author-mail: " + email + "\nauthor: " + author + "\nstory: " + key + "\ntitle: " + summary);
+        if (!id.isEmpty()) {
+            markdown.put("mentioned_list", List.of(id));
+        }
         Map<String, Object> body = Map.of("msgtype", "markdown", "markdown", markdown);
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(webhook)).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
