@@ -40,7 +40,7 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
                     String result = analyzer.analyze(record);
                     String email = record.getStack().isEmpty() ? "" : record.getStack().get(0).getMail();
                     String author = record.getStack().isEmpty() ? "" : record.getStack().get(0).getAuthor();
-                    String key = jira.create(record.getType(), record.description(result), email, author);
+                    String key = jira.create(record.getType(), record.description(), email, author);
                     records.save(new TraceRecord(id, key));
                     return;
                 }

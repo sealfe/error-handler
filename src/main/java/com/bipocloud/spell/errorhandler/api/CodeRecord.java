@@ -43,8 +43,7 @@ public class CodeRecord {
         return map;
     }
 
-    public String description(String result) {
-        String collect = String.join("\n", trace);
-        return collect + "\n" + result;
+    public String description() {
+        return String.join("\n", trace);
     }
 }
