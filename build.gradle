@@ -32,6 +32,7 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-model-openai:1.0.0")
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation("com.fasterxml.jackson.core:jackson-databind:2.19.2")
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 }
 
 tasks.named('test') {

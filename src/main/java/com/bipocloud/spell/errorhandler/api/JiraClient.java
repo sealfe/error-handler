@@ -36,7 +36,7 @@ public class JiraClient {
         this.webhook = webhook;
     }
 
-    public void create(String summary, String description, String assignee) throws IOException, InterruptedException {
+    public String create(String summary, String description, String assignee) throws IOException, InterruptedException {
         String id = accountId(assignee);
         Map<String, Object> fields = new HashMap<>();
         fields.put("project", Map.of("id", project));
@@ -54,6 +54,7 @@ public class JiraClient {
         Map<String, Object> result = mapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
         String key = result.getOrDefault("key", "").toString();
         notifyWeChat(assignee, key, summary);
+        return key;
     }
 
     private String accountId(String email) throws IOException, InterruptedException {
