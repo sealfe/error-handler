@@ -21,6 +21,9 @@ public class ElasticsearchMessage {
     public String extractAppName() {
         int idx = title.lastIndexOf(']');
         String name = idx >= 0 ? title.substring(idx + 1) : title;
+        if (name.endsWith("-job")) {
+            return name.substring(0, name.length() - 4);
+        }
         return name.endsWith("-copy") ? name.substring(0, name.length() - 5) : name;
     }
 }

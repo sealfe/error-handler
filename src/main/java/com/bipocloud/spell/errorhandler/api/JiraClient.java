@@ -86,9 +86,9 @@ public class JiraClient {
         Map<String, Object> markdown = new HashMap<>();
         markdown.put("content", "author-mail: " + email + "\nauthor: " + author + "\nstory: " + key + "\ntitle: " + summary);
         if (!id.isEmpty()) {
-            markdown.put("mentioned_list", List.of(id));
+            markdown.put("mentioned_mobile_list", List.of(id));
         }
-        Map<String, Object> body = Map.of("msgtype", "markdown", "markdown", markdown);
+        Map<String, Object> body = Map.of("msgtype", "text", "text", markdown);
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(webhook)).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
         client.send(request, HttpResponse.BodyHandlers.ofString());
     }
