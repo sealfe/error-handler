@@ -1,8 +1,10 @@
 package com.bipocloud.spell.errorhandler.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -41,6 +43,7 @@ public class LoggingElasticsearchMessageCallback implements ElasticsearchMessage
                     String email = record.getStack().isEmpty() ? "" : record.getStack().get(0).getMail();
                     String author = record.getStack().isEmpty() ? "" : record.getStack().get(0).getAuthor();
                     String key = jira.create(record.getType(), record.description(), email, author);
+                    jira.comment(key, result);
                     records.save(new TraceRecord(id, key));
                     return;
                 }
