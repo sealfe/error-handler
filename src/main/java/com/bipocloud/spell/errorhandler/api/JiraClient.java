@@ -26,14 +26,16 @@ public class JiraClient {
     private final String user;
     private final String token;
     private final String project;
+    private final String webhook;
 
-    public JiraClient(ObjectMapper mapper, @Value("${jira.url}") String url, @Value("${jira.user}") String user, @Value("${jira.token}") String token, @Value("${jira.project}") String project) {
+    public JiraClient(ObjectMapper mapper, @Value("${jira.url}") String url, @Value("${jira.user}") String user, @Value("${jira.token}") String token, @Value("${jira.project}") String project, @Value("${wechat.webhook}") String webhook) {
         this.mapper = mapper;
         this.client = HttpClient.newHttpClient();
         this.url = url;
         this.user = user;
         this.token = token;
         this.project = project;
+        this.webhook = webhook;
     }
 
     public void create(String summary, String description, String assignee) throws IOException, InterruptedException {
@@ -59,8 +61,10 @@ public class JiraClient {
         body.put("update", update);
         String auth = Base64.getEncoder().encodeToString((user + ":" + token).getBytes(StandardCharsets.UTF_8));
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url + "/rest/api/2/issue")).header("Authorization", "Basic " + auth).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
-        HttpResponse<String> send = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(send);
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Map<String, Object> result = mapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+        String key = result.getOrDefault("key", "").toString();
+        notifyWeChat(assignee, key, summary);
     }
 
     private String accountId(String email) throws IOException, InterruptedException {
@@ -86,6 +90,13 @@ public class JiraClient {
             return values.get(0).get("id").toString();
         }
         return "";
+    }
+
+    private void notifyWeChat(String assignee, String key, String summary) throws IOException, InterruptedException {
+        Map<String, Object> markdown = Map.of("content", "assignee: " + assignee + "\nstory: " + key + "\ntitle: " + summary);
+        Map<String, Object> body = Map.of("msgtype", "markdown", "markdown", markdown);
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(webhook)).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(body))).build();
+        client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
 }
